@@ -29,10 +29,11 @@ pinecone_api_key=os.getenv('PINECONE_API_KEY')
 st.title("AskGroq")
 st.write("Upload pdfs & use the model of your choice to get answers from your doc")
 
+
 # Upload widget
 uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['pdf'])
 
-
+       
 if 'retriever' not in st.session_state:
     if uploaded_files:
         st.session_state.ufs=uploaded_files
@@ -50,6 +51,7 @@ if 'retriever' not in st.session_state:
             appended_file_name=appended_file_name[1:]
 
             print(appended_file_name)
+            st.session_state.appended_file_name=appended_file_name
             print(50)
             server_url = os.getenv('UNSTRUCTURED_API_URL')
             print(52)
@@ -110,6 +112,9 @@ if 'retriever' not in st.session_state:
 
 
 if 'retriever' in st.session_state:
+    if uploaded_files != st.session_state.ufs:
+        st.info('Please reload the page to add new files, as we cannot add new sparse_encoder to a retriever. It is added while instantiating hence you need to reload to proceed.')
+
     st.write("Choose a Developer:")
     clicked = clickable_images(
         [
