@@ -1,0 +1,12 @@
+streamlit
+langchain_groq
+langchain
+langchain_core
+python-dotenv
+langchain_community
+pinecone_text
+langchain_nvidia_ai_endpoints
+pinecone
+nltk
+st_clickable_images
+langchain-unstructured
