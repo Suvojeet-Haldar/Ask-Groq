@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from st_clickable_images import clickable_images
 import shutil
 import sys
+import nltk
 
 # Loading the api keys
 load_dotenv()
@@ -85,7 +86,8 @@ if 'retriever' not in st.session_state:
 
             # use default tf-idf values
             bm25_encoder = BM25Encoder().default()
-            
+            nltk.download('punkt_tab')
+
             # fit tf-idf values on your corpus
             bm25_encoder.fit(corpus)
 
