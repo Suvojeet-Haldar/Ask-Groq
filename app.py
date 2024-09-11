@@ -47,7 +47,7 @@ if 'retriever' not in st.session_state:
             print(appended_file_name)
             st.session_state.appended_file_name=appended_file_name
 
-            dir = f"uploaded_files/{appended_file_name}"
+            dir = appended_file_name
             os.mkdir(dir)
 
             # file_path_list=[]
