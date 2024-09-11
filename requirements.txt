@@ -8,3 +8,5 @@ langchain_nvidia_ai_endpoints
 pinecone
 nltk
 langchain-unstructured
+streamlit
+st_clickable_images
