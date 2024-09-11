@@ -39,33 +39,36 @@ if 'retriever' not in st.session_state:
         st.session_state.ufs=uploaded_files
         with st.spinner('Please wait, your doc(s) is/are being processed & uploaded to our secure vector db server'):
             # Process the uploaded file(s)
-            file_path_list=[]
             appended_file_name=""
             for uploaded_file in uploaded_files:
                 file_name=uploaded_file.name
-                file_path = os.path.join("uploaded_files", file_name)
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                file_path_list.append(f"uploaded_files/{file_name}")
                 appended_file_name=appended_file_name+"_"+file_name
             appended_file_name=appended_file_name[1:]
-
             print(appended_file_name)
             st.session_state.appended_file_name=appended_file_name
-            print(50)
-            server_url = os.getenv('UNSTRUCTURED_API_URL')
-            print(52)
-            loader = UnstructuredLoader(
-                file_path = file_path_list,
-                api_key=os.getenv('UNSTRUCTURED_API_KEY'),
-                partition_via_api=True,
-                chunking_strategy="by_title",
-                strategy="fast",
-                url = os.getenv('UNSTRUCTURED_API_URL')
-            )
-            print(61)
 
-            loader_p= PyPDFDirectoryLoader("./uploaded_files")
+            dir = f"uploaded_files/{appended_file_name}"
+            os.mkdir(dir)
+
+            # file_path_list=[]
+            for uploaded_file in uploaded_files:
+                file_name=uploaded_file.name
+                file_path = os.path.join(dir, file_name)
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                # file_path_list.append(f"uploaded_files/{file_name}")
+
+            # server_url = os.getenv('UNSTRUCTURED_API_URL')
+            # loader = UnstructuredLoader(
+            #     file_path = file_path_list,
+            #     api_key=os.getenv('UNSTRUCTURED_API_KEY'),
+            #     partition_via_api=True,
+            #     chunking_strategy="by_title",
+            #     strategy="fast",
+            #     url = os.getenv('UNSTRUCTURED_API_URL')
+            # )
+
+            loader_p= PyPDFDirectoryLoader(dir)
 
             docs= loader_p.load()
             text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -87,10 +90,10 @@ if 'retriever' not in st.session_state:
             bm25_encoder.fit(corpus)
 
             # store the values to a json file
-            bm25_encoder.dump("bm25_values.json")
+            bm25_encoder.dump(f"{dir}/bm25_values.json")
 
             # load to your BM25Encoder object
-            bm25_encoder = BM25Encoder().load("bm25_values.json")
+            bm25_encoder = BM25Encoder().load(f"{dir}/bm25_values.json")
 
             # vector embedding and sparse matrix
             embeddings=NVIDIAEmbeddings(model="nvidia/nv-embed-v1")
@@ -103,9 +106,8 @@ if 'retriever' not in st.session_state:
             retriever.add_texts(corpus, namespace=appended_file_name)
             
             # Delete the directory and its contents post corpus addition to the retriever
-            shutil.rmtree("uploaded_files")
-            # Recreate the empty directory
-            os.makedirs("uploaded_files")
+            shutil.rmtree(dir)
+            
 
             st.session_state.retriever=retriever
             st.success("File uploaded successfully!")
