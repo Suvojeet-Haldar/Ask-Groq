@@ -34,22 +34,23 @@ st.write("Upload any file(s) & use the model of your choice to get answers from 
 
 components.html("""
     <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+    <img src="https://i.postimg.cc/d15b1GQT/pdf.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/rwq7Shdt/word.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/mZHxR1fh/txt.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/mDpnRRVY/powerpoint.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/0jgNtgmf/excel.png" title="Image #2" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" title="Image #5" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/rFBDhrGT/csv.png" title="Image #0" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/bw0w3FN0/epub.png" title="Image #1" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/0jgNtgmf/excel.png" title="Image #2" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Cx6SPTpq/gmail.png" title="Image #3" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/T2qG8WXG/html.png" title="Image #4" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" title="Image #5" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/PqGFr2m7/markdown.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/ZKs5gyrn/odt.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Pr0kYbWW/org.png" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/d15b1GQT/pdf.png" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/mDpnRRVY/powerpoint.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/P5bFJ12r/rst.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/50XhX6X7/rtf.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/G26ZGdYc/tsv.png" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/mZHxR1fh/txt.png" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/rwq7Shdt/word.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/MHkFXt2H/xml.png" style="margin: 15px; height: 75px;">
     </div>
 """, height=310)
