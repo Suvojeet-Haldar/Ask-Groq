@@ -75,7 +75,8 @@ if 'retriever' not in st.session_state:
             st.session_state.appended_file_name=appended_file_name
 
             dir = appended_file_name
-            os.mkdir(dir)
+            if not os.path.isdir(dir):
+                os.mkdir(dir)
 
             file_path_list=[]
             for uploaded_file in uploaded_files:
