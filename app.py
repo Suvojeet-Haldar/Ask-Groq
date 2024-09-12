@@ -29,7 +29,7 @@ pinecone_api_key=os.getenv('PINECONE_API_KEY')
    
 # Header
 st.title("AskGroq")
-st.write("Upload any file & use the model of your choice to get answers from it.")
+st.write("Upload any file(s) & use the model of your choice to get answers from it.")
 
 
 components.html("""
