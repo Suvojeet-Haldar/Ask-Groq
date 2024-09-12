@@ -44,7 +44,6 @@ components.html("""
     <img src="https://i.postimg.cc/bw0w3FN0/epub.png" title="Image #1" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Cx6SPTpq/gmail.png" title="Image #3" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/T2qG8WXG/html.png" title="Image #4" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" title="Image #5" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/PqGFr2m7/markdown.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/ZKs5gyrn/odt.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Pr0kYbWW/org.png" style="margin: 15px; height: 75px;">
