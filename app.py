@@ -17,6 +17,7 @@ from st_clickable_images import clickable_images
 import shutil
 import sys
 import nltk
+import streamlit.components.v1 as components
 
 # Loading the api keys
 load_dotenv()
@@ -28,17 +29,42 @@ pinecone_api_key=os.getenv('PINECONE_API_KEY')
    
 # Header
 st.title("AskGroq")
-st.write("Upload pdfs & use the model of your choice to get answers from your doc")
+st.write("Upload any file & use the model of your choice to get answers from it.")
+
+
+components.html("""
+    <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+    <img src="https://i.postimg.cc/rFBDhrGT/csv.png" title="Image #0" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/bw0w3FN0/epub.png" title="Image #1" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/0jgNtgmf/excel.png" title="Image #2" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Cx6SPTpq/gmail.png" title="Image #3" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/T2qG8WXG/html.png" title="Image #4" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" title="Image #5" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/PqGFr2m7/markdown.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/ZKs5gyrn/odt.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Pr0kYbWW/org.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/d15b1GQT/pdf.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/mDpnRRVY/powerpoint.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/P5bFJ12r/rst.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/50XhX6X7/rtf.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/G26ZGdYc/tsv.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/mZHxR1fh/txt.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/rwq7Shdt/word.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/MHkFXt2H/xml.png" style="margin: 15px; height: 75px;">
+    </div>
+""", height=310)
+
+
 
 
 # Upload widget
-uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['pdf'])
+uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
 
        
 if 'retriever' not in st.session_state:
     if uploaded_files:
         st.session_state.ufs=uploaded_files
-        with st.spinner('Please wait, your doc(s) is/are being processed & uploaded to our secure vector db server'):
+        with st.spinner('Please wait, your file(s) is/are being processed & uploaded to our secure vector db server'):
             # Process the uploaded file(s)
             appended_file_name=""
             for uploaded_file in uploaded_files:
@@ -51,27 +77,28 @@ if 'retriever' not in st.session_state:
             dir = appended_file_name
             os.mkdir(dir)
 
-            # file_path_list=[]
+            file_path_list=[]
             for uploaded_file in uploaded_files:
                 file_name=uploaded_file.name
                 file_path = os.path.join(dir, file_name)
                 with open(file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
-                # file_path_list.append(f"uploaded_files/{file_name}")
+                file_path_list.append(f"{dir}/{file_name}")
 
-            # server_url = os.getenv('UNSTRUCTURED_API_URL')
-            # loader = UnstructuredLoader(
-            #     file_path = file_path_list,
-            #     api_key=os.getenv('UNSTRUCTURED_API_KEY'),
-            #     partition_via_api=True,
-            #     chunking_strategy="by_title",
-            #     strategy="fast",
-            #     url = os.getenv('UNSTRUCTURED_API_URL')
-            # )
+            server_url = os.getenv('UNSTRUCTURED_API_URL')
+            loader_u = UnstructuredLoader(
+                file_path = file_path_list,
+                api_key=os.getenv('UNSTRUCTURED_API_KEY'),
+                partition_via_api=True,
+                chunking_strategy="by_title",
+                strategy="fast",
+                url = os.getenv('UNSTRUCTURED_API_URL')
+            )
 
             loader_p= PyPDFDirectoryLoader(dir)
 
-            docs= loader_p.load()
+            docs= loader_u.load()
+            
             text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             final_documents= text_splitter.split_documents(docs)
             corpus = [doc.page_content for doc in final_documents]
@@ -112,7 +139,7 @@ if 'retriever' not in st.session_state:
             
 
             st.session_state.retriever=retriever
-            st.success("File uploaded successfully!")
+            st.success("File(s) uploaded successfully!")
 
 
 if 'retriever' in st.session_state:
@@ -181,6 +208,7 @@ if 'model' in st.session_state:
             response=retrieval_chain.invoke({"input":input_prompt})
 
             st.write(response['answer'])
+            
             st.write("Response time :", time.process_time()-start)
 
             # With a streamlit expander 
@@ -189,6 +217,7 @@ if 'model' in st.session_state:
                 for i, doc in enumerate(response["context"]):
                     st.write(doc.page_content)
                     st.write("--------------------------------")
+            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
         except AttributeError:
             # Code to handle the exception
             st.markdown(":red[Please first embed document(s) before asking questions.]")
