@@ -106,7 +106,13 @@ if 'retriever' not in st.session_state:
             
             text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             final_documents= text_splitter.split_documents(docs)
-            corpus = [doc.page_content for doc in final_documents]
+
+            corpus=[]
+            for doc in docs:
+                if doc.metadata['filename'].endswith(('.xlsx', '.xls')):
+                    corpus.append(doc.metadata['text_as_html'])
+                else:
+                    corpus.append(doc.page_content)
 
             # print(corpus)
 
