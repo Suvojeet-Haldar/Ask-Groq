@@ -61,7 +61,7 @@ components.html("""
 uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'jpg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
 
        
-if 'retriever' not in st.session_state:
+if 'retriever_or_corpus' not in st.session_state:
     if uploaded_files:
         st.session_state.ufs=uploaded_files
         with st.spinner('Please wait, your file(s) is/are being processed & uploaded to our secure vector db server'):
@@ -96,6 +96,8 @@ if 'retriever' not in st.session_state:
                 else:
                     strategy= "fast"
 
+            print(strategy)
+
             server_url = os.getenv('UNSTRUCTURED_API_URL')
             loader_u = UnstructuredLoader(
                 file_path = file_path_list,
@@ -106,60 +108,65 @@ if 'retriever' not in st.session_state:
                 url = os.getenv('UNSTRUCTURED_API_URL')
             )
 
-            loader_p= PyPDFDirectoryLoader(dir)
+            # loader_p= PyPDFDirectoryLoader(dir)
 
             docs= loader_u.load()
             
-            text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-            final_documents= text_splitter.split_documents(docs)
+            # text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            # final_documents= text_splitter.split_documents(docs)
+
+            excel_flag=0
 
             corpus=[]
             for doc in docs:
-                if doc.metadata['filename'].endswith(('.xlsx', '.xls')):
+                if doc.metadata['filename'].endswith(('.xlsx', '.xls', 'csv')):
                     corpus.append(doc.metadata['text_as_html'])
+                    excel_flag=1
                 else:
                     corpus.append(doc.page_content)
 
             # print(corpus)
 
-            index_name="custom-gpt"
-            # Iniialize the Pinecone client
-            pc=Pinecone(api_key=pinecone_api_key)
-            index=pc.Index(index_name)
+            if excel_flag==0:
+                index_name="custom-gpt"
+                # Iniialize the Pinecone client
+                pc=Pinecone(api_key=pinecone_api_key)
+                index=pc.Index(index_name)
 
+                # use default tf-idf values
+                bm25_encoder = BM25Encoder().default()
+                nltk.download('punkt_tab')
 
-            # use default tf-idf values
-            bm25_encoder = BM25Encoder().default()
-            nltk.download('punkt_tab')
+                # fit tf-idf values on your corpus
+                bm25_encoder.fit(corpus)
 
-            # fit tf-idf values on your corpus
-            bm25_encoder.fit(corpus)
+                # store the values to a json file
+                bm25_encoder.dump(f"{dir}/bm25_values.json")
 
-            # store the values to a json file
-            bm25_encoder.dump(f"{dir}/bm25_values.json")
+                # load to your BM25Encoder object
+                bm25_encoder = BM25Encoder().load(f"{dir}/bm25_values.json")
 
-            # load to your BM25Encoder object
-            bm25_encoder = BM25Encoder().load(f"{dir}/bm25_values.json")
+                # vector embedding and sparse matrix
+                embeddings=NVIDIAEmbeddings(model="nvidia/nv-embed-v1")
+                
+                if appended_file_name in index.describe_index_stats()['namespaces']:
+                    index.delete(namespace=appended_file_name, delete_all=True)
 
-            # vector embedding and sparse matrix
-            embeddings=NVIDIAEmbeddings(model="nvidia/nv-embed-v1")
-            
-            if appended_file_name in index.describe_index_stats()['namespaces']:
-                index.delete(namespace=appended_file_name, delete_all=True)
+                retriever=PineconeHybridSearchRetriever(embeddings=embeddings, sparse_encoder=bm25_encoder, index=index, namespace=appended_file_name)
 
-            retriever=PineconeHybridSearchRetriever(embeddings=embeddings, sparse_encoder=bm25_encoder, index=index, namespace=appended_file_name)
+                retriever.add_texts(corpus, namespace=appended_file_name)
 
-            retriever.add_texts(corpus, namespace=appended_file_name)
+                st.session_state.retriever_or_corpus=retriever
+            else:
+                st.session_state.retriever_or_corpus=corpus
             
             # Delete the directory and its contents post corpus addition to the retriever
+            st.session_state.excel_flag=excel_flag
             shutil.rmtree(dir)
-            
-
-            st.session_state.retriever=retriever
             st.success("File(s) uploaded successfully!")
 
 
-if 'retriever' in st.session_state:
+if 'retriever_or_corpus' in st.session_state:
     if uploaded_files != st.session_state.ufs:
         st.info('Please reload the page to add new files, as we cannot add new sparse_encoder to a retriever. It is added while instantiating hence you need to reload to proceed.')
 
@@ -201,31 +208,39 @@ if 'model' in st.session_state:
     input_prompt= st.text_input(f"Enter Your Questions from the documents:")
 
     if input_prompt:
-        prompt_template=ChatPromptTemplate.from_template(
-        """
-        Answer the questions based on the provided context only.
-        Please provide the most accurate response based on the question
-        <context>
-        {context}
-        <context>
-        Questions:{input}
-
-        """
-        )
-        groq_api_key =os.getenv('GROQ_API_KEY')
-        model=st.session_state.model
-        llm=ChatGroq(groq_api_key=groq_api_key,
-                    model_name=model)
         start=time.process_time()
-        document_chain = create_stuff_documents_chain(llm, prompt_template)
-        
-        try:
-            retriever=st.session_state.retriever
+        llm = ChatGroq(
+                model=st.session_state.model,
+                groq_api_key=os.getenv('GROQ_API_KEY')
+            )
+        if st.session_state.excel_flag==1:
+            corpus=st.session_state.retriever_or_corpus
+            messages = [
+                            ("system", f"Answer the questions based on the provided context only. Please provide the most accurate response based on the question <context>{corpus}<context>"),
+                            ("human", input_prompt),
+                        ]
+            response=llm.invoke(messages)
+            st.write(response.content)
+            st.write("Response time :", time.process_time()-start)
+        else:
+            retriever=st.session_state.retriever_or_corpus
+            prompt_template=ChatPromptTemplate.from_template(
+            """
+            Answer the questions based on the provided context only.
+            Please provide the most accurate response based on the question
+            <context>
+            {context}
+            <context>
+            Questions:{input}
+
+            """
+            )
+            document_chain = create_stuff_documents_chain(llm, prompt_template)
             retrieval_chain = create_retrieval_chain(retriever, document_chain)
             response=retrieval_chain.invoke({"input":input_prompt})
 
             st.write(response['answer'])
-            
+        
             st.write("Response time :", time.process_time()-start)
 
             # With a streamlit expander 
@@ -235,6 +250,3 @@ if 'model' in st.session_state:
                     st.write(doc.page_content)
                     st.write("--------------------------------")
             st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
-        except AttributeError:
-            # Code to handle the exception
-            st.markdown(":red[Please first embed document(s) before asking questions.]")
