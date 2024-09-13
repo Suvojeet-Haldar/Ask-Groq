@@ -74,7 +74,11 @@ if 'retriever' not in st.session_state:
             print(appended_file_name)
             st.session_state.appended_file_name=appended_file_name
 
-            dir = appended_file_name
+            root_dir= "uploaded_files"
+            if not os.path.isdir(root_dir):
+                os.mkdir(root_dir)
+
+            dir = f"{root_dir}/{appended_file_name}"
             if not os.path.isdir(dir):
                 os.mkdir(dir)
 
