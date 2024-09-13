@@ -38,12 +38,12 @@ components.html("""
     <img src="https://i.postimg.cc/rwq7Shdt/word.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/mZHxR1fh/txt.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/mDpnRRVY/powerpoint.png" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/0jgNtgmf/excel.png" title="Image #2" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" title="Image #5" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/rFBDhrGT/csv.png" title="Image #0" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/bw0w3FN0/epub.png" title="Image #1" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/Cx6SPTpq/gmail.png" title="Image #3" style="margin: 15px; height: 75px;">
-    <img src="https://i.postimg.cc/T2qG8WXG/html.png" title="Image #4" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/0jgNtgmf/excel.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Yqr7tqpF/image-gallery.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/rFBDhrGT/csv.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/bw0w3FN0/epub.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/Cx6SPTpq/gmail.png" style="margin: 15px; height: 75px;">
+    <img src="https://i.postimg.cc/T2qG8WXG/html.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/PqGFr2m7/markdown.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/ZKs5gyrn/odt.png" style="margin: 15px; height: 75px;">
     <img src="https://i.postimg.cc/Pr0kYbWW/org.png" style="margin: 15px; height: 75px;">
@@ -58,7 +58,7 @@ components.html("""
 
 
 # Upload widget
-uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
+uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'jpg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
 
        
 if 'retriever' not in st.session_state:
@@ -90,13 +90,19 @@ if 'retriever' not in st.session_state:
                     f.write(uploaded_file.getbuffer())
                 file_path_list.append(f"{dir}/{file_name}")
 
+            for file_path in file_path_list:
+                if file_path.endswith(('.bmp', '.png', '.tiff', '.jpeg', '.heic', '.jpg')):
+                   strategy= "hi_res"
+                else:
+                    strategy= "fast"
+
             server_url = os.getenv('UNSTRUCTURED_API_URL')
             loader_u = UnstructuredLoader(
                 file_path = file_path_list,
                 api_key=os.getenv('UNSTRUCTURED_API_KEY'),
                 partition_via_api=True,
                 chunking_strategy="by_title",
-                strategy="fast",
+                strategy=f"{strategy}",
                 url = os.getenv('UNSTRUCTURED_API_URL')
             )
 
