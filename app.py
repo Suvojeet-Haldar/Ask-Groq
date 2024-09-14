@@ -28,8 +28,10 @@ pinecone_api_key=os.getenv('PINECONE_API_KEY')
 
 st.set_page_config(
     page_title="AskGroq",
-    page_icon="icons/AG_black_4_3.png",  # or use a .png file
-    # page_icon="icons/AG.png",  # or use a .png file
+
+    # page_icon="icons/AG_black_4_3.png",  # or use a .png file
+    page_icon="icons/AG.png",  # or use a .png file
+
     # layout="wide"
     menu_items={
             #  'Get Help': 'https://www.extremelycoolapp.com/help',
