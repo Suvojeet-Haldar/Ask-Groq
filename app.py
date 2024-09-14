@@ -82,6 +82,7 @@ if 'retriever_or_corpus' not in st.session_state:
             appended_file_name=""
             for uploaded_file in uploaded_files:
                 file_name=uploaded_file.name
+                file_name= ''.join(i for i in file_name if ord(i) < 128)
                 appended_file_name=appended_file_name+"_"+file_name
             appended_file_name=appended_file_name[1:]
             print(appended_file_name)
