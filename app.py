@@ -26,7 +26,18 @@ if os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
     print("Valid NVIDIA_API_KEY already in environment. Delete to reset")
 pinecone_api_key=os.getenv('PINECONE_API_KEY')
 
-   
+st.set_page_config(
+    page_title="AskGroq",
+    page_icon="icons/AG_black_4_3.png",  # or use a .png file
+    # page_icon="icons/AG_black.png",  # or use a .png file
+    # layout="wide"
+    menu_items={
+             'Get Help': 'https://www.extremelycoolapp.com/help',
+             'Report a bug': "https://www.extremelycoolapp.com/bug",
+             'About': "# This is a header. This is an *extremely* cool app!"
+         }
+) 
+
 # Header
 st.title("AskGroq")
 st.write("Upload any file(s) & use the model of your choice to get answers from it.")
