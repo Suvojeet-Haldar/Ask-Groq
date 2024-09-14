@@ -32,9 +32,9 @@ st.set_page_config(
     # page_icon="icons/AG_black.png",  # or use a .png file
     # layout="wide"
     menu_items={
-             'Get Help': 'https://www.extremelycoolapp.com/help',
-             'Report a bug': "https://www.extremelycoolapp.com/bug",
-             'About': "# This is a header. This is an *extremely* cool app!"
+            #  'Get Help': 'https://www.extremelycoolapp.com/help',
+             'Report a bug': "mailto:suvojeethaldar4@gmail.com",
+            #  'About': "# This is a header. This is an *extremely* cool app!"
          }
 ) 
 
