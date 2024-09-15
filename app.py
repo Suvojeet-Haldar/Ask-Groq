@@ -129,19 +129,22 @@ if 'retriever_or_corpus' not in st.session_state:
             # text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             # final_documents= text_splitter.split_documents(docs)
 
-            excel_flag=0
+            excel_or_xml_flag=0
 
             corpus=[]
             for doc in docs:
                 if doc.metadata['filename'].endswith(('.xlsx', '.xls', 'csv', 'tsv')):
                     corpus.append(doc.metadata['text_as_html'])
-                    excel_flag=1
+                    excel_or_xml_flag=1
+                elif doc.metadata['filename'].endswith(('xml')):
+                    corpus.append(doc.page_content)
+                    excel_or_xml_flag=1
                 else:
                     corpus.append(doc.page_content)
 
             # print(corpus)
 
-            if excel_flag==0:
+            if excel_or_xml_flag==0:
                 index_name="custom-gpt"
                 # Iniialize the Pinecone client
                 pc=Pinecone(api_key=pinecone_api_key)
@@ -175,7 +178,7 @@ if 'retriever_or_corpus' not in st.session_state:
                 st.session_state.retriever_or_corpus=corpus
             
             # Delete the directory and its contents post corpus addition to the retriever
-            st.session_state.excel_flag=excel_flag
+            st.session_state.excel_or_xml_flag=excel_or_xml_flag
             shutil.rmtree(dir)
             st.success("File(s) uploaded successfully!")
 
@@ -227,7 +230,7 @@ if 'model' in st.session_state:
                 model=st.session_state.model,
                 groq_api_key=os.getenv('GROQ_API_KEY')
             )
-        if st.session_state.excel_flag==1:
+        if st.session_state.excel_or_xml_flag==1:
             corpus=st.session_state.retriever_or_corpus
             messages = [
                             ("system", f"Answer the questions based on the provided context only. Please provide the most accurate response based on the question <context>{corpus}<context>"),
