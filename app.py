@@ -84,6 +84,7 @@ if 'retriever_or_corpus' not in st.session_state:
                 file_name= ''.join(i for i in file_name if ord(i) < 128)
                 appended_file_name=appended_file_name+"_"+file_name
             appended_file_name=appended_file_name[1:]
+            print("---------------------------------")
             print(appended_file_name)
             st.session_state.appended_file_name=appended_file_name
 
@@ -132,7 +133,7 @@ if 'retriever_or_corpus' not in st.session_state:
 
             corpus=[]
             for doc in docs:
-                if doc.metadata['filename'].endswith(('.xlsx', '.xls', 'csv')):
+                if doc.metadata['filename'].endswith(('.xlsx', '.xls', 'csv', 'tsv')):
                     corpus.append(doc.metadata['text_as_html'])
                     excel_flag=1
                 else:
