@@ -236,6 +236,7 @@ if 'model' in st.session_state:
             response=llm.invoke(messages)
             st.write(response.content)
             st.write("Response time :", time.process_time()-start)
+            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
         else:
             retriever=st.session_state.retriever_or_corpus
             prompt_template=ChatPromptTemplate.from_template(
