@@ -22,8 +22,7 @@ import streamlit.components.v1 as components
 # Loading the api keys
 load_dotenv()
 # del os.environ['NVIDIA_API_KEY']  ## delete key and reset
-if os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-"):
-    print("Valid NVIDIA_API_KEY already in environment. Delete to reset")
+os.environ.get("NVIDIA_API_KEY", "").startswith("nvapi-")
 pinecone_api_key=os.getenv('PINECONE_API_KEY')
 
 st.set_page_config(
@@ -71,7 +70,7 @@ components.html("""
 
 
 # Upload widget
-uploaded_files = st.file_uploader("", accept_multiple_files=True, type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'jpg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
+uploaded_files = st.file_uploader("Upload any file(s) & use the model of your choice to get answers from it.", accept_multiple_files=True, label_visibility="collapsed", type=['bmp', 'csv', 'doc', 'docx', 'eml', 'epub', 'heic', 'html', 'jpeg', 'jpg', 'png', 'md', 'msg', 'odt', 'org', 'p7s', 'pdf', 'png', 'ppt', 'pptx', 'rst', 'rtf', 'tiff', 'txt', 'tsv', 'xls', 'xlsx', 'xml'])
 
        
 if 'retriever_or_corpus' not in st.session_state:
