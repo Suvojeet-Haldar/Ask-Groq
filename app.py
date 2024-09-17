@@ -236,7 +236,14 @@ if 'model' in st.session_state:
                             ("system", f"Answer the questions based on the provided context only. Please provide the most accurate response based on the question <context>{corpus}<context>"),
                             ("human", input_prompt),
                         ]
-            response=llm.invoke(messages)
+            
+            try:
+                response=llm.invoke(messages)
+            except Exception as e:
+                # Code to handle any exception
+                print(f"An error occurred: {e}")
+                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model/developer to proceed.')
+
             st.write(response.content)
             st.write("Response time :", time.process_time()-start)
             st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
@@ -255,7 +262,13 @@ if 'model' in st.session_state:
             )
             document_chain = create_stuff_documents_chain(llm, prompt_template)
             retrieval_chain = create_retrieval_chain(retriever, document_chain)
-            response=retrieval_chain.invoke({"input":input_prompt})
+            
+            try:
+                response=retrieval_chain.invoke({"input":input_prompt})
+            except Exception as e:
+                # Code to handle any exception
+                print(f"An error occurred: {e}")
+                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model/developer to proceed.')
 
             st.write(response['answer'])
         
