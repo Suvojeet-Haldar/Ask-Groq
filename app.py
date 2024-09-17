@@ -190,10 +190,10 @@ if 'retriever_or_corpus' in st.session_state:
     st.write("Choose a Developer:")
     clicked = clickable_images(
         [
-            "https://i.postimg.cc/fRkjg9x0/meta-Large.png",
-            "https://i.postimg.cc/T1RnjLd1/google.png",
             "https://i.postimg.cc/sfcYjcmh/groq-black.png",
-            "https://i.postimg.cc/d3HZ85NN/mistral.png"
+            "https://i.postimg.cc/d3HZ85NN/mistral.png",
+            "https://i.postimg.cc/T1RnjLd1/google.png",
+            "https://i.postimg.cc/fRkjg9x0/meta-Large.png"
         ],
         titles=[f"Image #{str(i)}" for i in range(6)],
         div_style={"display": "flex", "justify-content": "center", "flex-wrap": "wrap", "id": "responsiveDiv"},
@@ -201,7 +201,7 @@ if 'retriever_or_corpus' in st.session_state:
     )
 
     # Define options for the first dropdown
-    Developers = ['Meta', 'Google', 'Groq', 'Mistral']
+    Developers = ['Groq', 'Mistral', 'Google', 'Meta']
     Developer=Developers[clicked]
 
     # Define options for the second dropdown based on the first selection
