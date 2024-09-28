@@ -19,6 +19,31 @@ import sys
 import nltk
 import streamlit.components.v1 as components
 
+def add_file_text_to_corpus(uploaded_files):
+    with st.spinner('Please wait, your file(s) is/are being processed'):
+        new_files= [uf_obj for uf_obj in uploaded_files if uf_obj not in st.session_state.ufs]
+        appended_file_name=""
+        for uploaded_file in new_files:
+            file_name=uploaded_file.name
+            appended_file_name=appended_file_name+"_"+file_name
+        appended_file_name=appended_file_name[1:]
+        appended_file_name=st.session_state.appended_file_name+"_"+appended_file_name
+        print(appended_file_name)
+        st.session_state.appended_file_name=appended_file_name
+
+        root_dir= "uploaded_files"
+        dir = f"{root_dir}/{appended_file_name}"
+        if not os.path.isdir(dir):
+            os.mkdir(dir)
+
+        file_path_list=[]
+        for uploaded_file in uploaded_files:
+            file_name=uploaded_file.name
+            file_path = os.path.join(dir, file_name)
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            file_path_list.append(f"{dir}/{file_name}")
+
 # Loading the api keys
 load_dotenv()
 # del os.environ['NVIDIA_API_KEY']  ## delete key and reset
@@ -185,7 +210,11 @@ if 'retriever_or_corpus' not in st.session_state:
 
 if 'retriever_or_corpus' in st.session_state:
     if uploaded_files != st.session_state.ufs:
-        st.info('Please reload the page to add new files, as we cannot add new sparse_encoder to a retriever. It is added while instantiating hence you need to reload to proceed.')
+        if st.session_state.excel_or_xml_flag==0:
+            st.info('Please reload the page to add new files, as we cannot add new sparse_encoder to a retriever. It is added while instantiating hence you need to reload to proceed.')
+        else:
+            add_file_text_to_corpus(uploaded_files)
+
 
     st.write("Choose a Developer:")
     clicked = clickable_images(
@@ -281,3 +310,11 @@ if 'model' in st.session_state:
                     st.write(doc.page_content)
                     st.write("--------------------------------")
             st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
+
+
+footer_html = """
+<div style='text-align: center;'>
+  <p>Developed by Suvojeet Haldar</p>
+</div>
+"""
+st.markdown(footer_html, unsafe_allow_html=True)
