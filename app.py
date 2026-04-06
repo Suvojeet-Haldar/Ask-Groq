@@ -2,15 +2,16 @@ from langchain_community.retrievers import PineconeHybridSearchRetriever
 from pinecone_text.sparse import BM25Encoder
 from langchain_unstructured import UnstructuredLoader
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_nvidia_ai_endpoints import NVIDIAEmbeddings
 from pinecone import Pinecone
 import os
+import requests
 import streamlit as st
 from langchain_groq import ChatGroq
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains import create_retrieval_chain
+from langchain_classic.chains import create_retrieval_chain
 import time
 from dotenv import load_dotenv
 from st_clickable_images import clickable_images
@@ -43,6 +44,22 @@ def add_file_text_to_corpus(uploaded_files):
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             file_path_list.append(f"{dir}/{file_name}")
+
+@st.cache_data(ttl=3600)  # cache for 1 hour
+def get_groq_models():
+    url = "https://api.groq.com/openai/v1/models"
+    headers = {
+        "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    # filter out non-chat models
+    models = [
+        m['id'] for m in data['data']
+        if not any(x in m['id'] for x in ['whisper', 'orpheus', 'guard', 'safeguard', 'compound'])
+    ]
+    return sorted(models)
 
 # Loading the api keys
 load_dotenv()
@@ -215,40 +232,11 @@ if 'retriever_or_corpus' in st.session_state:
         else:
             add_file_text_to_corpus(uploaded_files)
 
-
-    st.write("Choose a Developer:")
-    clicked = clickable_images(
-        [
-            "https://i.postimg.cc/sfcYjcmh/groq-black.png",
-            "https://i.postimg.cc/d3HZ85NN/mistral.png",
-            "https://i.postimg.cc/T1RnjLd1/google.png",
-            "https://i.postimg.cc/fRkjg9x0/meta-Large.png"
-        ],
-        titles=[f"Image #{str(i)}" for i in range(6)],
-        div_style={"display": "flex", "justify-content": "center", "flex-wrap": "wrap", "id": "responsiveDiv"},
-        img_style={"margin": "15px", "height": "75px"},
-    )
-
-    # Define options for the first dropdown
-    Developers = ['Groq', 'Mistral', 'Google', 'Meta']
-    Developer=Developers[clicked]
-
-    # Define options for the second dropdown based on the first selection
-    if Developer == 'Meta':
-        models = ['llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'llama-guard-3-8b', 'llama3-70b-8192', 'llama3-8b-8192']
-    elif Developer == 'Google':
-        models = ['gemma2-9b-it', 'gemma-7b-it']
-    elif Developer == 'Groq':
-        models = ['llama3-groq-70b-8192-tool-use-preview', 'llama3-groq-8b-8192-tool-use-preview']
-    elif Developer == 'Mistral':
-        models = ['mixtral-8x7b-32768']
-
-    # Create the second dropdown
-    model = st.selectbox(f'Choose a Model from {Developer} :', models)
-
-    # Display the selected options
-    st.write(f'You selected: {Developer} - {model}')
-    st.session_state.model=model
+    st.write("Choose a Model:")
+    models = get_groq_models()
+    model = st.selectbox('Choose a Model:', models, label_visibility="collapsed")
+    st.write(f'You selected: {model}')
+    st.session_state.model = model
 
 if 'model' in st.session_state:
     input_prompt= st.text_input(f"Enter Your Questions from the documents:")
@@ -271,11 +259,12 @@ if 'model' in st.session_state:
             except Exception as e:
                 # Code to handle any exception
                 print(f"An error occurred: {e}")
-                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model/developer to proceed.')
+                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model to proceed.')
+                st.stop()
 
             st.write(response.content)
             st.write("Response time :", time.process_time()-start)
-            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
+            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model.]")
         else:
             retriever=st.session_state.retriever_or_corpus
             prompt_template=ChatPromptTemplate.from_template(
@@ -297,7 +286,8 @@ if 'model' in st.session_state:
             except Exception as e:
                 # Code to handle any exception
                 print(f"An error occurred: {e}")
-                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model/developer to proceed.')
+                st.info(f'We deeply regret to inform you that {st.session_state.model} is temporarily unavailable, please select another model to proceed.')
+                st.stop()
 
             st.write(response['answer'])
         
@@ -309,7 +299,7 @@ if 'model' in st.session_state:
                 for i, doc in enumerate(response["context"]):
                     st.write(doc.page_content)
                     st.write("--------------------------------")
-            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model or a developer.]")
+            st.markdown(":green[If you are not satisfied with the answer, you can choose a different model.]")
 
 
 footer_html = """
